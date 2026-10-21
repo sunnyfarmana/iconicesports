@@ -54,10 +54,21 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {});
 });
 
+// Normalize URL for Vercel Serverless environment
+app.use((req, _res, next) => {
+  const targetUrl = req.originalUrl || req.url;
+  if (targetUrl && !targetUrl.startsWith('/api')) {
+    req.url = '/api' + targetUrl;
+  } else if (req.originalUrl && req.url !== req.originalUrl) {
+    req.url = req.originalUrl;
+  }
+  next();
+});
+
 // ==================== ROUTES ====================
 
-// Health check
-app.get('/api/health', (_req, res) => {
+// Root & Health check
+app.get(['/', '/api', '/api/health'], (_req, res) => {
   res.json({
     status: 'online',
     platform: 'ICONIC ESPORTS',
@@ -127,8 +138,13 @@ app.get('/api/admin/audit-logs', authenticateToken, requireRole('ADMIN'), adminC
 app.post('/api/admin/slots', authenticateToken, requireApprovedOrganizer, adminController.assignSlot);
 app.post('/api/admin/matches', authenticateToken, requireApprovedOrganizer, adminController.createMatch);
 
-// Start server
-server.listen(PORT, () => {
-  console.log(`[ICONIC ESPORTS API] Server running on port ${PORT}`);
-  console.log(`[ICONIC ESPORTS API] Dedicated to Battlegrounds Mobile India`);
-});
+// Start server only when running as a standalone process (not on Vercel Serverless)
+if (!process.env.VERCEL) {
+  server.listen(PORT, () => {
+    console.log(`[ICONIC ESPORTS API] Server running on port ${PORT}`);
+    console.log(`[ICONIC ESPORTS API] Dedicated to Battlegrounds Mobile India`);
+  });
+}
+
+export { app, server };
+export default app;

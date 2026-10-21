@@ -1,0 +1,243 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  password     String
+  username     String         @unique
+  role         String         @default("PLAYER") // ADMIN, ORGANIZER, TEAM_CAPTAIN, PLAYER
+  avatar       String?
+  phone        String?
+  isActive     Boolean        @default(true)
+  organizerStatus String       @default("NONE") // NONE, PENDING, APPROVED, REJECTED
+  organizerBio String?
+  organizerApprovedAt DateTime?
+  playerProfile PlayerProfile?
+  captainedTeams Team[]       @relation("TeamCaptain")
+  organizedTournaments Tournament[] @relation("TournamentOrganizer")
+  announcements Announcement[] @relation("UserAnnouncements")
+  reviewedMatches Match[]     @relation("MatchReviewer")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model PlayerProfile {
+  id           String         @id @default(uuid())
+  userId       String         @unique
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ign          String         // In-Game Name e.g., "Mortal", "JONATHAN"
+  bgmiUid      String         @unique // Character ID e.g., "5123456789"
+  primaryRole  String         @default("ASSAULTER") // IGL, ASSAULTER, SUPPORT, SNIPER, ENTRY
+  currentTeamId String?
+  currentTeam  Team?          @relation(fields: [currentTeamId], references: [id], onDelete: SetNull)
+  teamMemberships TeamMember[]
+  device       String?
+  bio          String?
+  totalMatches Int            @default(0)
+  totalKills   Int            @default(0)
+  totalWins    Int            @default(0)
+  mvpCount     Int            @default(0)
+  playerResults MatchPlayerResult[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model Team {
+  id           String         @id @default(uuid())
+  name         String         @unique // e.g., "Team Soul"
+  tag          String         @unique // e.g., "SOUL"
+  logo         String?
+  description  String?
+  captainId    String
+  captain      User           @relation("TeamCaptain", fields: [captainId], references: [id])
+  members      TeamMember[]
+  players      PlayerProfile[]
+  registrations TournamentRegistration[]
+  groupSlots   GroupSlot[]
+  teamResults  MatchTeamResult[]
+  playerResults MatchPlayerResult[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model TeamMember {
+  id        String        @id @default(uuid())
+  teamId    String
+  team      Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  playerId  String
+  player    PlayerProfile @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  role      String        @default("STARTER") // CAPTAIN, STARTER, SUBSTITUTE
+  status    String        @default("ACTIVE")  // ACTIVE, INVITED, INACTIVE
+  joinedAt  DateTime      @default(now())
+
+  @@unique([teamId, playerId])
+}
+
+model Tournament {
+  id              String         @id @default(uuid())
+  title           String         // e.g., "ICONIC BGMI PRO CHAMPIONSHIP 2026"
+  slug            String         @unique
+  banner          String?
+  description     String
+  season          String         @default("SEASON_2026") // e.g., "SEASON_1_2023", "SEASON_2_2024", "SEASON_3_2025", "SEASON_2026"
+  game            String         @default("BATTLEGROUNDS MOBILE INDIA")
+  format          String         @default("SQUAD") // SQUAD, DUO, SOLO
+  maxSlots        Int            @default(25)
+  registeredSlots Int            @default(0)
+  prizePool       String         @default("₹1,00,000")
+  prizeBreakdown  String?        // JSON string of breakdown (1st, 2nd, 3rd, MVP)
+  rules           String
+  scheduleStart   DateTime
+  scheduleEnd     DateTime
+  regOpenAt       DateTime?
+  regCloseAt      DateTime?
+  timezone        String         @default("Asia/Kolkata")
+  status          String         @default("REGISTRATION_OPEN") // DRAFT, PENDING_APPROVAL, PUBLISHED, REGISTRATION_OPEN, REGISTRATION_CLOSED, ONGOING, COMPLETED, CANCELLED
+  visibility      String         @default("PUBLIC") // PUBLIC, UNLISTED, PRIVATE
+  pointSystem     String         @default("BGMI_OFFICIAL_10PT") // BGMI_OFFICIAL_10PT, CUSTOM
+  scoringConfig   String?        // JSON string: { placementPoints: Record<number, number>, killPointMultiplier: number }
+  mapsConfig      String?        // JSON string: ["ERANGEL", "MIRAMAR", "SANHOK", "VIKENDI"]
+  minRosterSize   Int            @default(4)
+  maxRosterSize   Int            @default(6)
+  organizerId     String
+  organizer       User           @relation("TournamentOrganizer", fields: [organizerId], references: [id])
+  registrations   TournamentRegistration[]
+  stages          TournamentStage[]
+  matches         Match[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model TournamentRegistration {
+  id             String      @id @default(uuid())
+  tournamentId   String
+  tournament     Tournament  @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  teamId         String
+  team           Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  status         String      @default("PENDING") // PENDING, APPROVED, REJECTED, DISQUALIFIED
+  rosterSnapshot String?     // JSON snapshot of registered players with UIDs
+  registeredAt   DateTime    @default(now())
+
+  @@unique([tournamentId, teamId])
+}
+
+model TournamentStage {
+  id            String            @id @default(uuid())
+  tournamentId  String
+  tournament    Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  stageName     String            // e.g., "Qualifiers", "Semi-Finals", "Grand Finals"
+  sequenceOrder Int               @default(1)
+  stageType     String            @default("LEAGUE") // LEAGUE, KNOCKOUT
+  groups        TournamentGroup[]
+  matches       Match[]
+}
+
+model TournamentGroup {
+  id        String          @id @default(uuid())
+  stageId   String
+  stage     TournamentStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  groupName String          // e.g., "Group A", "Group B"
+  slots     GroupSlot[]
+  matches   Match[]
+}
+
+model GroupSlot {
+  id         String          @id @default(uuid())
+  groupId    String
+  group      TournamentGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  teamId     String?
+  team       Team?           @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  slotNumber Int             // Slot 1 through 25
+
+  @@unique([groupId, slotNumber])
+}
+
+model Match {
+  id                  String            @id @default(uuid())
+  tournamentId        String
+  tournament          Tournament        @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  stageId             String?
+  stage               TournamentStage?  @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  groupId             String?
+  group               TournamentGroup?  @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  matchNumber         Int               @default(1)
+  matchName           String            // e.g., "Match 1 - Erangel Day 1"
+  map                 String            @default("ERANGEL") // ERANGEL, MIRAMAR, SANHOK, VIKENDI
+  scheduledAt         DateTime
+  status              String            @default("SCHEDULED") // SCHEDULED, ROOM_OPEN, LIVE, COMPLETED, CANCELLED
+  resultStatus        String            @default("PENDING_REVIEW") // PENDING_REVIEW, DISPUTED, APPROVED, FINALIZED
+  evidenceUrl         String?           // Screenshot or match recording URL
+  reviewedById        String?
+  reviewedBy          User?             @relation("MatchReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewNotes         String?
+  roomId              String?
+  roomPassword        String?
+  credentialsReleased Boolean           @default(false)
+  teamResults         MatchTeamResult[]
+  playerResults       MatchPlayerResult[]
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+}
+
+model MatchTeamResult {
+  id              String   @id @default(uuid())
+  matchId         String
+  match           Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  teamId          String
+  team            Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  placement       Int      // 1 to 25
+  placementPoints Int      @default(0) // 10, 6, 5, 4, 3, 2, 1, 1, 0...
+  killPoints      Int      @default(0)
+  totalPoints     Int      @default(0) // placementPoints + killPoints
+  isWwcd          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  @@unique([matchId, teamId])
+}
+
+model MatchPlayerResult {
+  id        String        @id @default(uuid())
+  matchId   String
+  match     Match         @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  teamId    String
+  team      Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  playerId  String
+  player    PlayerProfile @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  kills     Int           @default(0)
+  damage    Int           @default(0)
+  isMvp     Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  @@unique([matchId, playerId])
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  category  String   @default("GENERAL") // TOURNAMENT, SCRIM, RULE_CHANGE, GENERAL
+  isPinned  Boolean  @default(false)
+  authorId  String
+  author    User     @relation("UserAnnouncements", fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String
+  actorName  String
+  action     String   // ROLE_CHANGE, ORGANIZER_APPROVED, ORGANIZER_REJECTED, TOURNAMENT_PUBLISHED, USER_SUSPENDED, USER_REINSTATED, SCORE_FINALIZED
+  targetType String   // USER, TOURNAMENT, MATCH, ORGANIZER
+  targetId   String?
+  details    String?  // JSON description
+  createdAt  DateTime @default(now())
+}

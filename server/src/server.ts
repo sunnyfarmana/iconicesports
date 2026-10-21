@@ -54,21 +54,11 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {});
 });
 
-// Normalize URL for Vercel Serverless environment
-app.use((req, _res, next) => {
-  const targetUrl = req.originalUrl || req.url;
-  if (targetUrl && !targetUrl.startsWith('/api')) {
-    req.url = '/api' + targetUrl;
-  } else if (req.originalUrl && req.url !== req.originalUrl) {
-    req.url = req.originalUrl;
-  }
-  next();
-});
-
 // ==================== ROUTES ====================
+const apiRouter = express.Router();
 
 // Root & Health check
-app.get(['/', '/api', '/api/health'], (_req, res) => {
+apiRouter.get(['/', '/health'], (_req, res) => {
   res.json({
     status: 'online',
     platform: 'ICONIC ESPORTS',
@@ -78,65 +68,69 @@ app.get(['/', '/api', '/api/health'], (_req, res) => {
 });
 
 // Authentication & Profile Routes
-app.post('/api/auth/register', authController.register);
-app.post('/api/auth/login', authController.login);
-app.post('/api/auth/logout', authController.logout);
-app.get('/api/auth/me', authenticateToken, authController.getMe);
-app.put('/api/auth/profile', authenticateToken, authController.updateProfile);
+apiRouter.post('/auth/register', authController.register);
+apiRouter.post('/auth/login', authController.login);
+apiRouter.post('/auth/logout', authController.logout);
+apiRouter.get('/auth/me', authenticateToken, authController.getMe);
+apiRouter.put('/auth/profile', authenticateToken, authController.updateProfile);
 
 // Tournament Routes
-app.get('/api/tournaments', tournamentController.getTournaments);
-app.get('/api/tournaments/:slug', tournamentController.getTournamentBySlug);
-app.post('/api/tournaments', authenticateToken, requireApprovedOrganizer, tournamentController.createTournament);
-app.put('/api/tournaments/:id', authenticateToken, requireApprovedOrganizer, tournamentController.updateTournament);
-app.post('/api/tournaments/:tournamentId/register', authenticateToken, tournamentController.registerTeam);
-app.post('/api/tournaments/:tournamentId/claim-slot', authenticateToken, tournamentController.claimSlot);
-app.get('/api/tournaments/:tournamentId/registrations', tournamentController.getRegistrations);
-app.put('/api/tournaments/registrations/:registrationId', authenticateToken, requireApprovedOrganizer, tournamentController.updateRegistrationStatus);
-app.post('/api/tournaments/:tournamentId/advance-stage', authenticateToken, requireApprovedOrganizer, tournamentController.advanceStage);
+apiRouter.get('/tournaments', tournamentController.getTournaments);
+apiRouter.get('/tournaments/:slug', tournamentController.getTournamentBySlug);
+apiRouter.post('/tournaments', authenticateToken, requireApprovedOrganizer, tournamentController.createTournament);
+apiRouter.put('/tournaments/:id', authenticateToken, requireApprovedOrganizer, tournamentController.updateTournament);
+apiRouter.post('/tournaments/:tournamentId/register', authenticateToken, tournamentController.registerTeam);
+apiRouter.post('/tournaments/:tournamentId/claim-slot', authenticateToken, tournamentController.claimSlot);
+apiRouter.get('/tournaments/:tournamentId/registrations', tournamentController.getRegistrations);
+apiRouter.put('/tournaments/registrations/:registrationId', authenticateToken, requireApprovedOrganizer, tournamentController.updateRegistrationStatus);
+apiRouter.post('/tournaments/:tournamentId/advance-stage', authenticateToken, requireApprovedOrganizer, tournamentController.advanceStage);
 
 // Match & Room Routes
-app.get('/api/tournaments/:tournamentId/matches', matchController.getMatches);
-app.post('/api/tournaments/:tournamentId/matches', authenticateToken, requireApprovedOrganizer, matchController.createMatch);
-app.get('/api/matches/:matchId', matchController.getMatchDetails);
-app.get('/api/matches/:matchId/credentials', authenticateToken, matchController.getRoomCredentials);
-app.put('/api/matches/:matchId/credentials', authenticateToken, requireApprovedOrganizer, matchController.updateRoomCredentials);
-app.post('/api/matches/:matchId/results', authenticateToken, requireApprovedOrganizer, matchController.submitMatchResults);
-app.put('/api/matches/:matchId/review', authenticateToken, requireApprovedOrganizer, matchController.reviewMatchResults);
+apiRouter.get('/tournaments/:tournamentId/matches', matchController.getMatches);
+apiRouter.post('/tournaments/:tournamentId/matches', authenticateToken, requireApprovedOrganizer, matchController.createMatch);
+apiRouter.get('/matches/:matchId', matchController.getMatchDetails);
+apiRouter.get('/matches/:matchId/credentials', authenticateToken, matchController.getRoomCredentials);
+apiRouter.put('/matches/:matchId/credentials', authenticateToken, requireApprovedOrganizer, matchController.updateRoomCredentials);
+apiRouter.post('/matches/:matchId/results', authenticateToken, requireApprovedOrganizer, matchController.submitMatchResults);
+apiRouter.put('/matches/:matchId/review', authenticateToken, requireApprovedOrganizer, matchController.reviewMatchResults);
 
 // Standings & Leaderboard Routes
-app.get('/api/tournaments/:tournamentId/standings', standingsController.getTournamentStandings);
-app.get('/api/tournaments/:tournamentId/mvp-leaderboard', standingsController.getTournamentMvpLeaderboard);
+apiRouter.get('/tournaments/:tournamentId/standings', standingsController.getTournamentStandings);
+apiRouter.get('/tournaments/:tournamentId/mvp-leaderboard', standingsController.getTournamentMvpLeaderboard);
 
 // Team Routes
-app.get('/api/teams', teamController.getTeams);
-app.get('/api/teams/:id', teamController.getTeamById);
-app.post('/api/teams', authenticateToken, teamController.createTeam);
-app.post('/api/teams/:teamId/members', authenticateToken, teamController.addMember);
-app.delete('/api/teams/:teamId/members/:playerId', authenticateToken, teamController.removeMember);
+apiRouter.get('/teams', teamController.getTeams);
+apiRouter.get('/teams/:id', teamController.getTeamById);
+apiRouter.post('/teams', authenticateToken, teamController.createTeam);
+apiRouter.post('/teams/:teamId/members', authenticateToken, teamController.addMember);
+apiRouter.delete('/teams/:teamId/members/:playerId', authenticateToken, teamController.removeMember);
 
 // Player Routes
-app.get('/api/players', playerController.getPlayers);
-app.get('/api/players/:id', playerController.getPlayerById);
-app.put('/api/players', authenticateToken, playerController.updatePlayer);
-app.get('/api/player/dashboard', authenticateToken, playerController.getPlayerDashboardData);
-app.post('/api/player/apply-organizer', authenticateToken, playerController.applyForOrganizer);
+apiRouter.get('/players', playerController.getPlayers);
+apiRouter.get('/players/:id', playerController.getPlayerById);
+apiRouter.put('/players', authenticateToken, playerController.updatePlayer);
+apiRouter.get('/player/dashboard', authenticateToken, playerController.getPlayerDashboardData);
+apiRouter.post('/player/apply-organizer', authenticateToken, playerController.applyForOrganizer);
 
 // Announcement Routes
-app.get('/api/announcements', announcementController.getAnnouncements);
-app.post('/api/announcements', authenticateToken, requireApprovedOrganizer, announcementController.createAnnouncement);
-app.delete('/api/announcements/:id', authenticateToken, requireApprovedOrganizer, announcementController.deleteAnnouncement);
+apiRouter.get('/announcements', announcementController.getAnnouncements);
+apiRouter.post('/announcements', authenticateToken, requireApprovedOrganizer, announcementController.createAnnouncement);
+apiRouter.delete('/announcements/:id', authenticateToken, requireApprovedOrganizer, announcementController.deleteAnnouncement);
 
 // Admin Routes
-app.get('/api/admin/stats', authenticateToken, requireRole('ADMIN'), adminController.getAdminStats);
-app.get('/api/admin/users', authenticateToken, requireRole('ADMIN'), adminController.getUsers);
-app.put('/api/admin/users/:userId/role', authenticateToken, requireRole('ADMIN'), adminController.updateUserRole);
-app.put('/api/admin/users/:userId/status', authenticateToken, requireRole('ADMIN'), adminController.toggleUserStatus);
-app.get('/api/admin/organizers', authenticateToken, requireRole('ADMIN'), adminController.getOrganizers);
-app.put('/api/admin/organizers/:userId', authenticateToken, requireRole('ADMIN'), adminController.verifyOrganizer);
-app.get('/api/admin/audit-logs', authenticateToken, requireRole('ADMIN'), adminController.getAuditLogs);
-app.post('/api/admin/slots', authenticateToken, requireApprovedOrganizer, adminController.assignSlot);
-app.post('/api/admin/matches', authenticateToken, requireApprovedOrganizer, adminController.createMatch);
+apiRouter.get('/admin/stats', authenticateToken, requireRole('ADMIN'), adminController.getAdminStats);
+apiRouter.get('/admin/users', authenticateToken, requireRole('ADMIN'), adminController.getUsers);
+apiRouter.put('/admin/users/:userId/role', authenticateToken, requireRole('ADMIN'), adminController.updateUserRole);
+apiRouter.put('/admin/users/:userId/status', authenticateToken, requireRole('ADMIN'), adminController.toggleUserStatus);
+apiRouter.get('/admin/organizers', authenticateToken, requireRole('ADMIN'), adminController.getOrganizers);
+apiRouter.put('/admin/organizers/:userId', authenticateToken, requireRole('ADMIN'), adminController.verifyOrganizer);
+apiRouter.get('/admin/audit-logs', authenticateToken, requireRole('ADMIN'), adminController.getAuditLogs);
+apiRouter.post('/admin/slots', authenticateToken, requireApprovedOrganizer, adminController.assignSlot);
+apiRouter.post('/admin/matches', authenticateToken, requireApprovedOrganizer, adminController.createMatch);
+
+// Mount router on BOTH '/api' AND '/' to seamlessly handle stripped prefixes in serverless environments
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 // Start server only when running as a standalone process (not on Vercel Serverless)
 if (!process.env.VERCEL) {

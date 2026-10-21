@@ -6,6 +6,7 @@ import { useToast } from '../context/ToastContext';
 import { Button } from './ui/Button';
 import { Badge } from './ui/Badge';
 import { Lock, Unlock, Copy, Check, Clock, Eye, CheckCircle } from 'lucide-react';
+import { formatError } from '../utils/formatError';
 
 interface MatchRoomCardProps {
   match: Match;
@@ -33,7 +34,7 @@ export const MatchRoomCard: React.FC<MatchRoomCardProps> = ({ match, onOpenSlots
       setCredentials(res.data);
       toast.success('Room credentials decrypted and verified.');
     } catch (err: any) {
-      const msg = err.response?.data?.error || 'Unable to retrieve room credentials.';
+      const msg = formatError(err, 'Unable to retrieve room credentials.');
       setErrorMsg(msg);
       toast.error(msg);
     } finally {

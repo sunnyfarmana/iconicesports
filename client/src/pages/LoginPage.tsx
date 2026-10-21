@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Lock, Mail, ArrowRight, AlertCircle, Shield } from 'lucide-react';
+import { formatError } from '../utils/formatError';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
@@ -26,7 +27,7 @@ export const LoginPage: React.FC = () => {
       toast.success('Authentication confirmed! Welcome to ICONIC ESPORTS.');
       navigate('/');
     } catch (err: any) {
-      const msg = err.response?.data?.error || 'Invalid email/username or password.';
+      const msg = formatError(err, 'Invalid email/username or password.');
       setErrorMsg(msg);
       toast.error(msg);
     } finally {

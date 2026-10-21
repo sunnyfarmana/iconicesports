@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { CheckCircle, AlertTriangle, AlertCircle, Info, X } from 'lucide-react';
+import { formatError } from '../utils/formatError';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
@@ -29,10 +30,11 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const addToast = useCallback((type: ToastType, message: string, title?: string) => {
+  const addToast = useCallback((type: ToastType, message: any, title?: string) => {
+    const stringMessage = formatError(message, type === 'success' ? 'Operation successful' : 'An error occurred');
     const id = `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const duration = 4000;
-    const item: ToastItem = { id, type, title, message, duration };
+    const item: ToastItem = { id, type, title, message: stringMessage, duration };
 
     setToasts((prev) => [...prev, item]);
 
@@ -42,10 +44,10 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [removeToast]);
 
   const toastMethods = {
-    success: (message: string, title?: string) => addToast('success', message, title || 'Success'),
-    error: (message: string, title?: string) => addToast('error', message, title || 'Attention Required'),
-    warning: (message: string, title?: string) => addToast('warning', message, title || 'Notice'),
-    info: (message: string, title?: string) => addToast('info', message, title || 'Information')
+    success: (message: any, title?: string) => addToast('success', message, title || 'Success'),
+    error: (message: any, title?: string) => addToast('error', message, title || 'Attention Required'),
+    warning: (message: any, title?: string) => addToast('warning', message, title || 'Notice'),
+    info: (message: any, title?: string) => addToast('info', message, title || 'Information')
   };
 
   const getToastIcon = (type: ToastType) => {

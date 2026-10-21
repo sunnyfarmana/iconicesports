@@ -12,6 +12,7 @@ import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
 import { socket } from '../socket';
+import { formatError } from '../utils/formatError';
 import {
   Trophy,
   Calendar,
@@ -136,7 +137,7 @@ export const TournamentDetailPage: React.FC = () => {
       fetchTournamentData();
       setRegModalOpen(false);
     } catch (err: any) {
-      const msg = err.response?.data?.error || 'Registration failed.';
+      const msg = formatError(err, 'Registration failed.');
       setRegError(msg);
       toast.error(msg);
     } finally {

@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Lock, Mail, User, Shield, ArrowRight, AlertCircle, Crosshair } from 'lucide-react';
+import { formatError } from '../utils/formatError';
 
 export const RegisterPage: React.FC = () => {
   const { register } = useAuth();
@@ -40,7 +41,7 @@ export const RegisterPage: React.FC = () => {
       toast.success('Official athlete profile created! Welcome to ICONIC ESPORTS.');
       navigate('/');
     } catch (err: any) {
-      const msg = err.response?.data?.error || 'Registration failed.';
+      const msg = formatError(err, 'Registration failed.');
       setErrorMsg(msg);
       toast.error(msg);
     } finally {

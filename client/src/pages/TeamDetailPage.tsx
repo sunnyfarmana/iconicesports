@@ -4,6 +4,7 @@ import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { Team } from '../types';
+import { formatError } from '../utils/formatError';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
@@ -65,7 +66,7 @@ export const TeamDetailPage: React.FC = () => {
       setAddModalOpen(false);
       setIgnOrUid('');
     } catch (err: any) {
-      const msg = err.response?.data?.error || 'Failed to add member.';
+      const msg = formatError(err, 'Failed to add member.');
       setErrorMsg(msg);
       toast.error(msg);
     } finally {

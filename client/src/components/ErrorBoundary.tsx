@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertCircle, RefreshCw, Home } from 'lucide-react';
+import { formatError } from '../utils/formatError';
 
 interface Props {
   children: ReactNode;
@@ -53,7 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
             {this.state.error && (
               <div className="p-3 bg-red-950/30 border border-red-500/30 rounded-lg text-left text-xs font-mono text-red-300 break-words max-h-32 overflow-y-auto">
-                {this.state.error.message || 'Unknown runtime error'}
+                {formatError(this.state.error, 'Unknown runtime error')}
               </div>
             )}
 

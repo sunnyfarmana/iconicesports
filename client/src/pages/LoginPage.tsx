@@ -121,21 +121,21 @@ export const LoginPage: React.FC = () => {
             <div className="grid grid-cols-3 gap-2 text-[10px] font-mono">
               <button
                 type="button"
-                onClick={() => fillQuickAccount('admin@iconicesports.in', 'admin123')}
+                onClick={() => fillQuickAccount('admin@kraftonindiaesports.com', 'admin123')}
                 className="p-1.5 bg-bgmi-surface hover:bg-amber-500/20 border border-bgmi-border rounded text-amber-400 font-bold transition-colors cursor-pointer"
               >
                 Admin User
               </button>
               <button
                 type="button"
-                onClick={() => fillQuickAccount('organizer@iconicesports.in', 'password123')}
+                onClick={() => fillQuickAccount('referee@kraftonindiaesports.com', 'password123')}
                 className="p-1.5 bg-bgmi-surface hover:bg-amber-500/20 border border-bgmi-border rounded text-amber-400 font-bold transition-colors cursor-pointer"
               >
-                Organizer
+                Head Referee
               </button>
               <button
                 type="button"
-                onClick={() => fillQuickAccount('manya@soul.esports', 'password123')}
+                onClick={() => fillQuickAccount('manya@godlike.in', 'password123')}
                 className="p-1.5 bg-bgmi-surface hover:bg-amber-500/20 border border-bgmi-border rounded text-amber-400 font-bold transition-colors cursor-pointer"
               >
                 Team Captain

@@ -44,6 +44,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (identifier: string, password: string) => {
     const res = await api.post('/auth/login', { identifier, password });
+    if (typeof res.data !== 'object' || !res.data?.user) {
+      throw new Error('Invalid response from server. Please ensure the backend server is running.');
+    }
     if (res.data.token) {
       localStorage.setItem('token', res.data.token);
     }
@@ -52,6 +55,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const register = async (data: RegisterData) => {
     const res = await api.post('/auth/register', data);
+    if (typeof res.data !== 'object' || !res.data?.user) {
+      throw new Error('Invalid response from server. Please ensure the backend server is running.');
+    }
     if (res.data.token) {
       localStorage.setItem('token', res.data.token);
     }

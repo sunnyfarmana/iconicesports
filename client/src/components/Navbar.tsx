@@ -120,9 +120,9 @@ export const Navbar: React.FC = () => {
                 >
                   <div className="w-8 h-8 rounded-md bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-bold text-sm">
                     {user.avatar ? (
-                      <img src={user.avatar} alt={user.username} className="w-full h-full rounded-md object-cover" />
+                      <img src={user.avatar} alt={user.username || 'User'} className="w-full h-full rounded-md object-cover" />
                     ) : (
-                      user.username.slice(0, 2).toUpperCase()
+                      (user.username || user.email || 'IE').slice(0, 2).toUpperCase()
                     )}
                   </div>
                   <div>
@@ -256,7 +256,7 @@ export const Navbar: React.FC = () => {
             {user ? (
               <div className="space-y-2">
                 <div className="px-3 py-2 bg-bgmi-card rounded-lg border border-bgmi-border text-xs">
-                  <p className="font-bold text-white">{user.playerProfile?.ign || user.username}</p>
+                  <p className="font-bold text-white">{user.playerProfile?.ign || user.username || 'User'}</p>
                   <p className="text-slate-400 font-mono text-[11px]">{user.email}</p>
                 </div>
                 {user.role === 'ADMIN' && (

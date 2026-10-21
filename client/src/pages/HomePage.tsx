@@ -41,31 +41,37 @@ export const HomePage: React.FC = () => {
           api.get('/teams')
         ]);
 
-        const allTournaments: Tournament[] = tournRes.data.tournaments;
+        const allTournaments: Tournament[] = Array.isArray(tournRes.data?.tournaments) ? tournRes.data.tournaments : [];
+        const announcementsList: Announcement[] = Array.isArray(announceRes.data?.announcements) ? announceRes.data.announcements : [];
+        const teamsList: Team[] = Array.isArray(teamsRes.data?.teams) ? teamsRes.data.teams : [];
+
         setTournaments(allTournaments);
-        setAnnouncements(announceRes.data.announcements.slice(0, 3));
-        setFeaturedTeams(teamsRes.data.teams.slice(0, 4));
+        setAnnouncements(announcementsList.slice(0, 3));
+        setFeaturedTeams(teamsList.slice(0, 4));
 
         // Find primary active tournament or BMPS 2026 for standings and matches
         const main =
-          allTournaments.find((t) => t.slug.includes('bmps-2026')) ||
+          allTournaments.find((t) => t.slug?.includes('bmps-2026')) ||
           allTournaments.find((t) => t.status === 'ONGOING') ||
           allTournaments[0];
 
-        if (main) {
+        if (main && main.id) {
           const [matchRes, standRes] = await Promise.all([
             api.get(`/tournaments/${main.id}/matches`),
             api.get(`/tournaments/${main.id}/standings`)
           ]);
+          const matches = Array.isArray(matchRes.data?.matches) ? matchRes.data.matches : [];
+          const stands = Array.isArray(standRes.data?.standings) ? standRes.data.standings : [];
+
           setLiveMatches(
-            matchRes.data.matches
+            matches
               .filter(
                 (m: Match) =>
                   m.status === 'ROOM_OPEN' || m.status === 'LIVE' || m.status === 'SCHEDULED'
               )
               .slice(0, 2)
           );
-          setStandings(standRes.data.standings.slice(0, 5));
+          setStandings(stands.slice(0, 5));
         }
       } catch (err) {
         console.error('Failed to load home page data:', err);

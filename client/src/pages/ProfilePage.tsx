@@ -146,7 +146,7 @@ export const ProfilePage: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center space-x-5">
             <div className="relative w-20 h-20 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-700/30 border-2 border-amber-500/50 flex items-center justify-center text-amber-400 font-display font-black text-3xl shadow-gold-sm">
-              {profile?.ign ? profile.ign.slice(0, 2).toUpperCase() : user.username.slice(0, 2).toUpperCase()}
+              {profile?.ign ? profile.ign.slice(0, 2).toUpperCase() : (user.username || user.email || 'IE').slice(0, 2).toUpperCase()}
               {user.role === 'ADMIN' && (
                 <span className="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-red-600 text-[9px] font-black uppercase text-white rounded">
                   ADM

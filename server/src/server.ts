@@ -54,6 +54,14 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {});
 });
 
+// Fix Vercel serverless rewrite destination paths
+app.use((req, _res, next) => {
+  if (req.originalUrl && (req.url.includes('[...all]') || req.url === '/api' || req.url === '/api/index')) {
+    req.url = req.originalUrl;
+  }
+  next();
+});
+
 // ==================== ROUTES ====================
 const apiRouter = express.Router();
 

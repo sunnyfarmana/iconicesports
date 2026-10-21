@@ -8,7 +8,7 @@
     "dev": "concurrently -n \"SERVER,CLIENT\" -c \"cyan,amber\" \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "build": "npm run build --prefix server && npm run build --prefix client",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && npm run build --prefix server && npm --prefix client install && npm --prefix client run build",
+    "vercel-build": "prisma generate && npm --prefix client install && npm --prefix client run build",
     "seed": "npm run seed --prefix server"
   },
   "dependencies": {

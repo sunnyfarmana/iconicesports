@@ -9,24 +9,27 @@ interface Props {
 interface State {
   hasError: boolean;
   error: Error | null;
+  componentStack: string | null;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
-    error: null
+    error: null,
+    componentStack: null
   };
 
   public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return { hasError: true, error, componentStack: null };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error caught by ErrorBoundary:', error, errorInfo);
+    this.setState({ componentStack: errorInfo.componentStack || null });
   }
 
   private handleReset = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false, error: null, componentStack: null });
     window.location.href = '/';
   };
 
@@ -53,8 +56,13 @@ export class ErrorBoundary extends Component<Props, State> {
             </div>
 
             {this.state.error && (
-              <div className="p-3 bg-red-950/30 border border-red-500/30 rounded-lg text-left text-xs font-mono text-red-300 break-words max-h-32 overflow-y-auto">
-                {formatError(this.state.error, 'Unknown runtime error')}
+              <div className="p-3 bg-red-950/30 border border-red-500/30 rounded-lg text-left text-xs font-mono text-red-300 break-words max-h-48 overflow-y-auto space-y-2">
+                <p className="font-bold">{formatError(this.state.error, 'Unknown runtime error')}</p>
+                {this.state.componentStack && (
+                  <pre className="text-[10px] text-slate-400 whitespace-pre-wrap font-mono mt-2 pt-2 border-t border-red-500/20">
+                    {this.state.componentStack}
+                  </pre>
+                )}
               </div>
             )}
 

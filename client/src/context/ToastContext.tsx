@@ -96,11 +96,11 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             <div className="flex-1 min-w-0">
               {t.title && (
                 <h4 className="font-display font-bold text-xs uppercase tracking-wider text-white">
-                  {t.title}
+                  {typeof t.title === 'object' ? JSON.stringify(t.title) : t.title}
                 </h4>
               )}
               <p className="text-xs text-slate-300 font-sans mt-0.5 leading-relaxed break-words">
-                {t.message}
+                {typeof t.message === 'object' ? JSON.stringify(t.message) : t.message}
               </p>
             </div>
             <button

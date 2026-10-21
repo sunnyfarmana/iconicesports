@@ -60,11 +60,11 @@ export const Modal: React.FC<ModalProps> = ({
           <div>
             {title && (
               <h3 className="font-display font-bold text-white text-lg uppercase tracking-wider">
-                {title}
+                {typeof title === 'object' ? JSON.stringify(title) : title}
               </h3>
             )}
             {description && (
-              <p className="text-xs text-slate-400 font-mono mt-0.5">{description}</p>
+              <p className="text-xs text-slate-400 font-mono mt-0.5">{typeof description === 'object' ? JSON.stringify(description) : description}</p>
             )}
           </div>
           <button

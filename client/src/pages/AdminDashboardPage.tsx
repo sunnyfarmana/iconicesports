@@ -1013,7 +1013,7 @@ export const AdminDashboardPage: React.FC = () => {
                         </Badge>
                       </td>
                       <td className="p-3.5 text-slate-400">{log.targetType}</td>
-                      <td className="p-3.5 max-w-md text-slate-300 truncate">{log.details}</td>
+                      <td className="p-3.5 max-w-md text-slate-300 truncate">{typeof log.details === 'object' ? JSON.stringify(log.details) : log.details}</td>
                     </tr>
                   ))}
                 </tbody>

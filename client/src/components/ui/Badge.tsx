@@ -65,7 +65,7 @@ export const Badge: React.FC<BadgeProps> = ({
           className={`w-1.5 h-1.5 rounded-full ${dotStyles[variant]} ${pulse ? 'animate-ping' : ''}`}
         />
       )}
-      <span>{children}</span>
+      <span>{typeof children === 'object' && children !== null && !React.isValidElement(children) ? JSON.stringify(children) : children}</span>
     </span>
   );
 };

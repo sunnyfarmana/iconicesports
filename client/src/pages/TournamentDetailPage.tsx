@@ -484,7 +484,7 @@ export const TournamentDetailPage: React.FC = () => {
                     className="flex items-center justify-between p-3 rounded-lg bg-bgmi-surface border border-bgmi-border text-xs font-mono"
                   >
                     <span className="font-bold text-slate-200">{position}</span>
-                    <span className="font-bold text-amber-400">{amount}</span>
+                    <span className="font-bold text-amber-400">{typeof amount === 'object' ? JSON.stringify(amount) : amount}</span>
                   </div>
                 ))}
               </div>

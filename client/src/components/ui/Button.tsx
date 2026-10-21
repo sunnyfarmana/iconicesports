@@ -102,12 +102,12 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
         {loading ? (
           <span className="flex items-center gap-2">
             <Loader2 className="w-4 h-4 animate-spin text-current flex-shrink-0" />
-            <span>{loadingText || children}</span>
+            <span>{typeof (loadingText || children) === 'object' && !React.isValidElement(loadingText || children) ? JSON.stringify(loadingText || children) : (loadingText || children)}</span>
           </span>
         ) : (
           <>
             {leftIcon && <span className="flex-shrink-0 flex items-center">{leftIcon}</span>}
-            <span className="truncate">{children}</span>
+            <span className="truncate">{typeof children === 'object' && children !== null && !React.isValidElement(children) ? JSON.stringify(children) : children}</span>
             {rightIcon && <span className="flex-shrink-0 flex items-center">{rightIcon}</span>}
           </>
         )}

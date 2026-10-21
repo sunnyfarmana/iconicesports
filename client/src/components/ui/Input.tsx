@@ -66,10 +66,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         {error ? (
           <p className="text-xs text-red-400 font-mono flex items-center space-x-1">
-            <span>{error}</span>
+            <span>{typeof error === 'object' ? JSON.stringify(error) : error}</span>
           </p>
         ) : helperText ? (
-          <p className="text-xs text-slate-500 font-mono">{helperText}</p>
+          <p className="text-xs text-slate-500 font-mono">{typeof helperText === 'object' ? JSON.stringify(helperText) : helperText}</p>
         ) : null}
       </div>
     );
